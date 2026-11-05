@@ -1,5 +1,5 @@
 import streamlit as st
-
+from ai_advisor import ai_advisor
 st.set_page_config(
     page_title="AFAQ AI",
     page_icon="🚀",
@@ -38,12 +38,8 @@ menu = st.sidebar.radio(
 if menu == "الرئيسية":
     st.header("مرحباً بك في آفاق AI")
     st.info("اكتشف مستقبلك التعليمي معنا.")
-
 elif menu == "المستشار الذكي":
-    st.header("🤖 المستشار الذكي")
-    question = st.text_input("اكتب سؤالك")
-    if st.button("إرسال"):
-        st.info("سيتم ربط المستشار بالذكاء الاصطناعي قريباً.")
+    ai_advisor()
 
 elif menu == "تحليل الأهلية":
     st.header("🎓 تحليل أهلية الطالب")
