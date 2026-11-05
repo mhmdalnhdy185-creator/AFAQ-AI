@@ -1,73 +1,139 @@
 import streamlit as st
 from ai_advisor import ai_advisor
+from database import initialize_database, get_opportunities, add_student
+
 st.set_page_config(
     page_title="AFAQ AI",
     page_icon="🚀",
     layout="wide"
 )
 
-st.markdown("""
-<style>
-.stApp {
-    background: #0b1220;
-    color: white;
-}
-h1, h2, h3 {
-    color: #38bdf8;
-}
-</style>
-""", unsafe_allow_html=True)
+# تهيئة قاعدة البيانات
+initialize_database()
 
-st.title("🚀 آفاق AI | AFAQ AI")
+# تصميم الواجهة
+st.title("🚀 آفاق AI")
+st.subheader("منصتك الذكية لاكتشاف الفرص التعليمية")
 
-st.subheader("نحوّل طموح الطلاب إلى فرص حقيقية")
+st.divider()
 
-st.write("منصتك الذكية لاكتشاف الفرص التعليمية.")
+# القائمة الرئيسية
+st.sidebar.title("القائمة الرئيسية")
 
-menu = st.sidebar.radio(
-    "القائمة الرئيسية",
+page = st.sidebar.radio(
+    "اختر القسم",
     [
         "الرئيسية",
         "المستشار الذكي",
-        "تحليل الأهلية",
-        "البحث عن المنح",
-        "التنبيهات"
+        "الفرص التعليمية",
+        "تسجيل طالب"
     ]
 )
 
-if menu == "الرئيسية":
+# الصفحة الرئيسية
+if page == "الرئيسية":
+
     st.header("مرحباً بك في آفاق AI")
-    st.info("اكتشف مستقبلك التعليمي معنا.")
-elif menu == "المستشار الذكي":
-    ai_advisor()
 
-elif menu == "تحليل الأهلية":
-    st.header("🎓 تحليل أهلية الطالب")
-    nationality = st.text_input("الجنسية")
-    education = st.selectbox(
-        "المرحلة الدراسية",
-        ["ثانوي", "جامعي", "خريج"]
+    st.write(
+        "اكتشف مستقبلك التعليمي من خلال منصة ذكية "
+        "تجمع لك الفرص والمنح والبرامج التعليمية."
     )
-    grade = st.number_input(
-        "المعدل الدراسي",
-        min_value=0.0,
-        max_value=100.0
-    )
-    if st.button("تحليل"):
-        st.write("تم تسجيل بياناتك.")
-        st.write("الجنسية:", nationality)
-        st.write("المرحلة:", education)
-        st.write("المعدل:", grade)
 
-elif menu == "البحث عن المنح":
-    st.header("🔍 البحث عن المنح")
-    country = st.text_input("الدولة المطلوبة")
-    if st.button("بحث"):
-        st.warning("سيتم ربط محرك البحث بمصادر المنح.")
+    col1, col2, col3 = st.columns(3)
 
-elif menu == "التنبيهات":
-    st.header("🔔 التنبيهات")
-    st.info("ستظهر هنا تنبيهات الفرص الجديدة.")
+    col1.metric("المنح الدراسية", "قريباً")
+    col2.metric("الهاكاثونات", "قريباً")
+    col3.metric("الدورات التعليمية", "قريباً")
 
-st.sidebar.markdown("---")
-st.sidebar.caption("AFAQ AI © 2026")
+    st.divider()
+
+    st.info("آفاق AI — فرصتك نحو مستقبل أفضل.")
+
+# المستشار الذكي
+elif page == "المستشار الذكي":
+
+    st.header("🤖 المستشار الذكي")
+
+    st.write("اسأل مستشارك الذكي عن مستقبلك التعليمي.")
+
+    question = st.text_area("اكتب سؤالك هنا")
+
+    if st.button("اسأل المستشار"):
+
+        if question.strip():
+
+            with st.spinner("جاري التفكير..."):
+
+                try:
+                    answer = ai_advisor(question)
+                    st.success("إجابة المستشار:")
+                    st.write(answer)
+
+                except Exception as e:
+                    st.error(f"حدث خطأ: {e}")
+
+        else:
+            st.warning("يرجى كتابة سؤالك أولاً.")
+
+# الفرص التعليمية
+elif page == "الفرص التعليمية":
+
+    st.header("🎓 الفرص التعليمية")
+
+    opportunities = get_opportunities()
+
+    if opportunities:
+
+        for item in opportunities:
+
+            with st.container():
+
+                st.subheader(item[1])
+                st.write(item[2] or "")
+                st.write(item[3] or "")
+
+                if item[4]:
+                    st.link_button(
+                        "زيارة الفرصة",
+                        item[4]
+                    )
+
+                st.divider()
+
+    else:
+
+        st.info("لا توجد فرص تعليمية مضافة حالياً.")
+
+# تسجيل الطلاب
+elif page == "تسجيل طالب":
+
+    st.header("📝 تسجيل طالب جديد")
+
+    name = st.text_input("الاسم الكامل")
+    email = st.text_input("البريد الإلكتروني")
+    country = st.text_input("الدولة")
+    education = st.text_input("المستوى التعليمي")
+
+    if st.button("تسجيل الطالب"):
+
+        if name.strip():
+
+            try:
+
+                add_student(
+                    name,
+                    email or None,
+                    country,
+                    education
+                )
+
+                st.success("تم تسجيل الطالب بنجاح!")
+
+            except Exception as e:
+
+                st.error(f"حدث خطأ: {e}")
+
+        else:
+
+            st.warning("يرجى إدخال ال
